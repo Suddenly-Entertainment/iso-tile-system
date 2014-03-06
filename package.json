@@ -1,0 +1,36 @@
+{
+  "name": "iso-tile-system",
+  "version": "1.0.0",
+  "description": "Isometric Tile System",
+  "author": {
+    "name": "Suddenly Entertainment!",
+    "email": "contact@equestrianwars.com",
+    "url":  "https://github.com/Suddenly-Entertainment"
+  },
+  "homepage": "http://www.equestrianwars.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Suddenly-Entertainment/isotilesystem"
+  },
+
+  "engines": {
+    "node": ">= 0.10.18",
+    "npm": ">= 1.0.0"
+  },
+
+  "dependencies": {
+    "express": "3.x",
+    "bcrypt-nodejs": "0.0.x",
+    "socket.io": "0.9.x",
+    "mime": "1.2.x",
+    "async": "0.2.x",
+    "png-js": "0.1.x",
+    "minify": "*"
+  },
+
+  "devDependencies": {},
+  "bundleDependencies": [],
+
+  "private": false,
+  "main": "app.js"
+}
