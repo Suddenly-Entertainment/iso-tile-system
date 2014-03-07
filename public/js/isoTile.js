@@ -49,7 +49,7 @@ function GraphicToTilePoint(point){
 74 41 isoTile.js:18
 2368 1312 isoTile.js:22
 Object {x: 1056, y: 1840} */
-function Tile(point, z, stage) {
+function Tile(point, z, stage, inChunk) {
     'use strict';
     var graphPos = TileToGraphicPoint(point);
     var self = this
@@ -109,6 +109,7 @@ function Tile(point, z, stage) {
     self.Sprite.position.y = graphPos.y;
     self.Sprite.z = posZ;
     
+    self.Sprite.setStageReference(stage);
     this.childThing = new PIXI.Sprite(tileTextures[randText+8]); 
     this.childThing.position.y -= 32;
     
@@ -120,38 +121,66 @@ function Tile(point, z, stage) {
     //stage.addChild(self.Sprite);
     
     //SortInOnStage(self.Sprite, stage);
-    WC.addTile(this);
+    if(!inChunk){
+        WC.addTile(this);
+    }
     //Tiles.push(this);
     return;
 }
+ 
 
 function Chunk(position, size, stage){
+    PIXI.DisplayObjectContainer.call( this );
+        this.chunkSize = size;
+    var self = this;
     var pos = position,
-        chunkSize = size,
-        chunkTiles = [],
+        posZ = 0;
+        //chunkSize = size,
+        //chunkTiles = [],
     
-        xOffset = tileImgW/2,
+    
+        /*xOffset = tileImgW/2,
         yOffset = tileImgH/2,
         totalXOffset = pos.x * xOffset,
         totalYOffset = pos.y * yOffset,
     
-        upperX = (xOffset/2 + totalXOffset)*chunkSize.x,
+        upperX = (xOffset/2 + totalXOffset)*this.chunkSize.x,
         lowerX = -upperX,
     
-        upperY = (yOffset/2 + totalYOffset)*chunkSize.y,
-        lowerY = -upperY;
+        upperY = (yOffset/2 + totalYOffset)*this.chunkSize.y,
+        lowerY = -upperY;*/
+    this.posA = new PIXI.Point(position.x * (chunkSize.x), position.y * (chunkSize.y));
+    this.pos = position;
+    this.position = TileToGraphicPoint(this.posA);
+    this.xRange = new PIXI.Point(0, chunkSize.x);
+    this.yRange = new PIXI.Point(0, chunkSize.y);
+    this.setStageReference(stage);
     
+    this.__defineGetter__('z', function(){
+        return posZ; 
+    });
+    this.__defineSetter__('z', function(value){
+        posZ = value;
+        //self. = value;
+    });    
     
-    for(var i = lowerX; i < upperX; i += xOffset){
-        for(var j = lowerY; j < upperY; j += yOffset){
-            var isoPos = new PIXI.Point(i-j, (i+j)/2),
-                tile = new Tile(isoPos, isoPos.y, stage);
+    for(var i = this.xRange.x; i < this.xRange.y; ++i){
+        for(var j = this.yRange.x; j < this.yRange.y; ++j){
+            var isoPos = new PIXI.Point(this.posA.x + i, this.posA.y + j),
+                tile = new Tile(isoPos, isoPos.y, stage, true);
             
-            chunkTiles.push(tile);
+            tile.Sprite.parent = this;
+            var p = (i * this.chunkSize.y)+j;
+            this.children.splice(p, 0, tile.Sprite);
+            //this.addChild(tile.Sprite);
         }
     }
-    Chunks.push(this);
+    WC.addChunk(this);
 }
+// constructor
+Chunk.prototype = Object.create( PIXI.DisplayObjectContainer.prototype );
+Chunk.prototype.constructor = Chunk;
+
 
 function TileIterator(){
     this.current = 0;
@@ -177,7 +206,7 @@ TileIterator.prototype.next = function(){
 };
 var log = {};
 
-WorldContainer = function(stage)
+WorldContainer = function(stage, chunkSize)
 {
     PIXI.DisplayObjectContainer.call( this );
  
@@ -186,7 +215,11 @@ WorldContainer = function(stage)
     //this.stage = stage;
     this.ZArr = [];
     this.Tiles = [];
+    this.Chunks = [];
+    this.chunkSize = chunkSize;
     stage.addChild(this);
+    this.setStageReference(stage);
+    
 };
  
 // constructor
@@ -206,14 +239,30 @@ WorldContainer.prototype.addTile = function(Tile){
     
 };
 
+WorldContainer.prototype.init = function(){
+    for(var x = -5; x < 5; x++){
+        for(var y = -5; y < 5; y++){
+            var pos = new PIXI.Point(x, y);
+            new Chunk(pos, this.chunkSize, this.stage);
+        }
+    }
+    this.Resort(false);
+}
+WorldContainer.prototype.addChunk = function(Chunk){
+    if(!this.Chunks[Chunk.pos.y]){
+        this.Chunks[Chunk.pos.y] = [];   
+    }
+    
+    //Tile.Sprite.parent = this.stage;
+    //Tile.Sprite.setStageReference(stage);
+    
+    this.Chunks[Chunk.pos.y].push(Chunk);
+};
 WorldContainer.prototype.Resort = function(isTile){
     var self = this;
     console.time("Resort");
+    this.ZArr[0] = [];
     if(isTile){
-        this.ZArr[0] = [];
-        /*for(var i = 0; i < this.Tiles.length; ++i){
-            this.ZArr[0] = this.ZArr[0].concat(this.Tiles[i]);
-        }*/
         async.concat(this.Tiles, function(tileRow, cb){
             cb(null, tileRow);
         }, function(err, theResults){
@@ -230,7 +279,21 @@ WorldContainer.prototype.Resort = function(isTile){
         });
 
     }else{
-        
+        async.concat(self.Chunks, function(tileRow, cb){
+            cb(null, tileRow);
+        }, function(err, theResults){
+            var sortedTiles = [];
+            async.sortBy(theResults, function(tile, callback){
+                var blah = tile.pos.y;
+                callback(null, blah);
+            },
+            function(err, results){
+                console.log(results);
+                self.ZArr[0] = results;
+                self.SetChildren();
+                console.timeEnd("Resort");
+            });
+        });
     }
     
     
@@ -263,6 +326,7 @@ WorldContainer.prototype.SetChildren = function(){
 
             item.parent = self;
             item.setStageReference(self.stage);
+            console.log(item);
             callback(null);
         },
         function(error){

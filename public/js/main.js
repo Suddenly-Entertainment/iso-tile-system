@@ -1,13 +1,22 @@
-var renderer = new PIXI.CanvasRenderer(800, 640);
+var renderer = null;
+if(confirm("Use Canvas Renderer?")){
+    renderer = new PIXI.CanvasRenderer(1600, 900);
+}else{
+    renderer = new PIXI.WebGLRenderer(1600, 900);
+}
 
 document.body.appendChild(renderer.view);
 var stage = new PIXI.Stage(0xFFFFFF, true),
-    WC = new WorldContainer(stage),
-    tileX = 100,
-    tileY = 100,
-    half = [-tileX/2, tileX/2];
+    chunkSize = new PIXI.Point(5, 5),
+    //chunkAmount = new PIXI.Point(
+    WC = new WorldContainer(stage, chunkSize);
 
-var xOffset = tileImgW/2,
+WC.init();
+    /*tileX = 100,
+    tileY = 100,
+    half = [-tileX/2, tileX/2];*/
+
+/*var xOffset = tileImgW/2,
     yOffset = tileImgH/2;
 
 var imgXPos = 0;
@@ -39,7 +48,7 @@ function yCreate(x, y, finish){
 }
 
 xCreate(half[0], half[1]);*/
-for(var x = half[1]; x > half[0]; x--){
+/*for(var x = half[1]; x > half[0]; x--){
     
     
     for(var y = half[1]; y > half[0]; y--){
@@ -49,7 +58,7 @@ for(var x = half[1]; x > half[0]; x--){
     
 }
 
-WC.Resort(true);
+WC.Resort(true);*/
 
 //PIXI.Texture.fromImage("imgs/tiles/apple_trees_block.png", true);
 //var tile = new PIXI.Sprite(tileTexture);
