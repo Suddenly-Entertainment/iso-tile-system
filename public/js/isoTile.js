@@ -1,17 +1,16 @@
-var Tiles = [],
-    Chunks = [],
-    tileTextures = [],
-    tileImgBaseUrl = 'imgs/tiles/',
-    tileImgW = 64,
-    tileImgH = 64;
+var testR = {toppers: 0,
+    notToppers: 0,
+    totalTopperChances: 0};
 
-tileTextures[0] = PIXI.Texture.fromImage(tileImgBaseUrl+'apple_trees_block.png', true);
+
+/*tileTextures[0] = PIXI.Texture.fromImage(tileImgBaseUrl+'apple_trees_block.png', true);
 tileTextures[1] = PIXI.Texture.fromImage(tileImgBaseUrl+'everfree_forest_block.png', true);
 tileTextures[2] = PIXI.Texture.fromImage(tileImgBaseUrl+'mountain_block.png', true);
 tileTextures[3] = PIXI.Texture.fromImage(tileImgBaseUrl+'poison_joke_block.png', true);
 tileTextures[4] = PIXI.Texture.fromImage(tileImgBaseUrl+'snow_mountain_block.png', true);
 tileTextures[5] = PIXI.Texture.fromImage(tileImgBaseUrl+'volcano_block.png', true);
 tileTextures[6] = PIXI.Texture.fromImage(tileImgBaseUrl+'zap_apple_tree_block.png', true);
+
 tileTextures[7] = PIXI.Texture.fromImage(tileImgBaseUrl+"apple_trees.png", true);
 tileTextures[8] = PIXI.Texture.fromImage(tileImgBaseUrl+'bushes.png', true);
 tileTextures[9] = PIXI.Texture.fromImage(tileImgBaseUrl+'everfree_forest.png', true);
@@ -21,26 +20,28 @@ tileTextures[12] = PIXI.Texture.fromImage(tileImgBaseUrl+'snow_mountain.png', tr
 tileTextures[13] = PIXI.Texture.fromImage(tileImgBaseUrl+'volcano.png', true);
 tileTextures[14] = PIXI.Texture.fromImage(tileImgBaseUrl+'zap_apple_tree.png', true);
 
-tileTextures.splice(0, 0, PIXI.Texture.fromImage(tileImgBaseUrl+'bushes_block.png', true));
+tileTextures.splice(0, 0, PIXI.Texture.fromImage(tileImgBaseUrl+'bushes_block.png', true));*/
 
 function TileToGraphicPoint(point){
-    
-    var gx = point.x * (tileImgW/2);
-    var gy = point.y * (tileImgH/2);
+    var ts = art.tiles.tileSize;
+    var gx = point.x * (ts.x/2);
+    var gy = point.y * (ts.y/2);
     var Ret = new PIXI.Point(gx - gy, (gx + gy)/2);
     
     return Ret;
 }
 function GraphicToTilePoint(point){
     
+    var ts = art.tiles.tileSize;
+    
     var a2 = point.y * 2;
     
     var nextStepX = a2 + point.x;
-    var tx2 = nextStepX/(tileImgW/2);
+    var tx2 = nextStepX/(ts.x/2);
     var tx = tx2/2;
     
     var nextStepY = a2 - point.x;
-    var ty2 = nextStepY/(tileImgH/2);
+    var ty2 = nextStepY/(ts.y/2);
     var ty = ty2/2;
     
     return new PIXI.Point(tx, ty);
@@ -54,17 +55,30 @@ function Tile(point, z, stage, inChunk) {
     var graphPos = TileToGraphicPoint(point);
     var self = this
         , imageUrl = null
-        , xOffset = tileImgW/2
-        , yOffset = tileImgH/4
         , pos = point
         , posZ = z;
     
-    var randText = Math.floor(Math.random()*6);
-    this.Texture = tileTextures[randText];
-    
-
-    
+    this.textName = art.tiles.getRandomTexture();
+    this.Texture = art.tiles.textures[this.textName];
+    //console.log(this.Texture);
     this.Sprite = new PIXI.Sprite(this.Texture);
+    
+    this.Sprite.parent =null;
+    //var scale = new PIXI.Point(0.5, 0.5);
+    
+    this.Sprite.scale = art.tiles.scale;
+    var chance = [true, false];
+    if(chance[Math.floor(Math.random()*chance.length)]){
+        ++testR.toppers;
+        this.Topper = new PIXI.Sprite(art.toppers.textures[this.textName]);
+        this.Topper.position.y -= art.tiles.otherSize.y/2;
+        //this.Topper.position.x += 20;
+        //this.Topper.scale = scale;
+        this.Sprite.addChild(this.Topper);
+    }else{
+        ++testR.notToppers;   
+    }
+    ++testR.totalTopperChances;
     
     this.__defineGetter__('imageUrl', function(){
        return imageUrl;
@@ -109,11 +123,11 @@ function Tile(point, z, stage, inChunk) {
     self.Sprite.position.y = graphPos.y;
     self.Sprite.z = posZ;
     
-    self.Sprite.setStageReference(stage);
-    this.childThing = new PIXI.Sprite(tileTextures[randText+8]); 
-    this.childThing.position.y -= 32;
+    //self.Sprite.setStageReference(stage);
+    //this.childThing = new PIXI.Sprite(tileTextures[randText+8]); 
+    //this.childThing.position.y -= 32;
     
-    this.Sprite.addChild(this.childThing);
+    //this.Sprite.addChild(this.childThing);
     //self.Sprite.setInteractive(true);
     //self.Sprite.mousedown = function(interData){
     //  console.log(interData);  
@@ -149,11 +163,11 @@ function Chunk(position, size, stage){
     
         upperY = (yOffset/2 + totalYOffset)*this.chunkSize.y,
         lowerY = -upperY;*/
-    this.posA = new PIXI.Point(position.x * (chunkSize.x), position.y * (chunkSize.y));
+    this.posA = new PIXI.Point(position.x, position.y);
     this.pos = position;
     this.position = TileToGraphicPoint(this.posA);
-    this.xRange = new PIXI.Point(0, chunkSize.x);
-    this.yRange = new PIXI.Point(0, chunkSize.y);
+    this.xRange = new PIXI.Point(-(size.x-1)/2, (size.x-1)/2);
+    this.yRange = new PIXI.Point(-(size.y-1)/2, (size.y-1)/2);
     this.setStageReference(stage);
     
     this.__defineGetter__('z', function(){
@@ -166,13 +180,13 @@ function Chunk(position, size, stage){
     
     for(var i = this.xRange.x; i < this.xRange.y; ++i){
         for(var j = this.yRange.x; j < this.yRange.y; ++j){
-            var isoPos = new PIXI.Point(this.posA.x + i, this.posA.y + j),
+            var isoPos = new PIXI.Point(i, j),
                 tile = new Tile(isoPos, isoPos.y, stage, true);
             
-            tile.Sprite.parent = this;
+            //tile.Sprite.parent = this;
             var p = (i * this.chunkSize.y)+j;
-            this.children.splice(p, 0, tile.Sprite);
-            //this.addChild(tile.Sprite);
+            //this.children.splice(p, 0, tile.Sprite);
+            this.addChild(tile.Sprite);
         }
     }
     WC.addChunk(this);
@@ -240,9 +254,11 @@ WorldContainer.prototype.addTile = function(Tile){
 };
 
 WorldContainer.prototype.init = function(){
-    for(var x = -5; x < 5; x++){
-        for(var y = -5; y < 5; y++){
-            var pos = new PIXI.Point(x, y);
+    var xOffset = 1,
+        yOffset = 1;
+    for(var x = 0; x < (this.chunkSize.y - xOffset)*10; x+=this.chunkSize.x-xOffset){
+        for(var hello = 0; hello < (this.chunkSize.y - yOffset)*10; hello+=this.chunkSize.y - yOffset){
+            var pos = new PIXI.Point(x, hello);
             new Chunk(pos, this.chunkSize, this.stage);
         }
     }
@@ -263,7 +279,7 @@ WorldContainer.prototype.Resort = function(isTile){
     console.time("Resort");
     this.ZArr[0] = [];
     if(isTile){
-        async.concat(this.Tiles, function(tileRow, cb){
+        /*async.concat(this.Tiles, function(tileRow, cb){
             cb(null, tileRow);
         }, function(err, theResults){
             var sortedTiles = [];
@@ -276,10 +292,16 @@ WorldContainer.prototype.Resort = function(isTile){
                 self.SetChildren();
                 console.timeEnd("Resort");
             });
-        });
-
+            
+        });*/
+        
+        self.ZArr[0] = _.flatten(self.Tiles);
+        
+        self.ZArr[0] = _.sortBy(self.ZArr[0], 'y');
+        console.timeEnd("Resort");
+        self.SetChildren();
     }else{
-        async.concat(self.Chunks, function(tileRow, cb){
+        /*async.concat(self.Chunks, function(tileRow, cb){
             cb(null, tileRow);
         }, function(err, theResults){
             var sortedTiles = [];
@@ -293,7 +315,14 @@ WorldContainer.prototype.Resort = function(isTile){
                 self.SetChildren();
                 console.timeEnd("Resort");
             });
-        });
+        });*/
+        
+        self.ZArr[0] = _.flatten(self.Chunks);
+        
+        self.ZArr[0] = _.sortBy(self.ZArr[0], 'y');
+        console.timeEnd("Resort");
+        self.SetChildren();
+
     }
     
     
@@ -319,18 +348,19 @@ WorldContainer.prototype.SetChildren = function(){
     },
     function(err, res){
         async.each(res, function(item, callback){
-            if(item.parent)
+            /*if(item.parent)
             {
                 item.parent.removeChild(item);
             }
 
             item.parent = self;
-            item.setStageReference(self.stage);
-            console.log(item);
+            item.setStageReference(self.stage);*/
+            self.addChild(item);
+            //console.log(item);
             callback(null);
         },
         function(error){
-            self.children = res;
+            //self.children = res;
             console.timeEnd("SetChildren");
         });
     });

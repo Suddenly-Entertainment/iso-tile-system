@@ -1,76 +1,23 @@
-var renderer = null;
-if(confirm("Use Canvas Renderer?")){
-    renderer = new PIXI.CanvasRenderer(1600, 900);
-}else{
-    renderer = new PIXI.WebGLRenderer(1600, 900);
+var renderer = new PIXI.WebGLRenderer(1280, 480);
+var quality = 1;
+
+if(!confirm("Use Normal Quality Textures?")){
+    if(confirm("Use High Quality Textures?  If no, then low quality.")){
+        quality = 2;
+    }else{
+        quality = 0;   
+    }
 }
 
 document.body.appendChild(renderer.view);
+
 var stage = new PIXI.Stage(0xFFFFFF, true),
-    chunkSize = new PIXI.Point(5, 5),
+    chunkSize = new PIXI.Point(7, 7),
     //chunkAmount = new PIXI.Point(
-    WC = new WorldContainer(stage, chunkSize);
+    WC;// = new WorldContainer(stage, chunkSize);
 
-WC.init();
-    /*tileX = 100,
-    tileY = 100,
-    half = [-tileX/2, tileX/2];*/
-
-/*var xOffset = tileImgW/2,
-    yOffset = tileImgH/2;
-
-var imgXPos = 0;
-var imgYPos = 0;
-
-var totalX = tileX * xOffset;
-var totalY = tileY * yOffset;
-var halfX = totalX/2;
-var halfY = totalY/2;
-
-//stage.position.x = 2;
-//stage.position.y = 2;
-
-/*function xCreate(cur, finish){
-    if(cur < finish){
-        _.defer(yCreate, cur, half[0], finish);
-        _.defer(xCreate, cur+1, finish);
-    }else{
-        WC.Resort(true);   
-    }
-}
-
-function yCreate(x, y, finish){
-    if(y < finish){
-        var point = new PIXI.Point(x, y);
-        new Tile(point, y, stage);
-        _.defer(yCreate, x, y+1, finish);
-    }
-}
-
-xCreate(half[0], half[1]);*/
-/*for(var x = half[1]; x > half[0]; x--){
-    
-    
-    for(var y = half[1]; y > half[0]; y--){
-        var point = new PIXI.Point(x, y);
-        new Tile(point, y, stage);         
-    }
-    
-}
-
-WC.Resort(true);*/
-
-//PIXI.Texture.fromImage("imgs/tiles/apple_trees_block.png", true);
-//var tile = new PIXI.Sprite(tileTexture);
-
-/*tile.position.x = 400;
-tile.position.y = 300;
-
-tile.scale.x = 2;
-tile.scale.y = 2;
-
-stage.addChild(tile);*/
 var DeltaMove = new PIXI.Point(0, 0);
+var frameCount = 0;
 $(document).keydown(function(e) {
     e.preventDefault();
     var key = e.keyCode;
@@ -109,41 +56,28 @@ $(document).keyup(function(e) {
     }
     
 });
-requestAnimationFrame(animate);
-//var ti = new TileIterator();
-//var nextTile;
-//var nextTile2;
-//var nextTile3;
-//var nextTile4;
-//var nextTile5;
-var frameCount = 0;
-setInterval(function(){
-    console.info(frameCount);
-    frameCount = 0;
-}, 1000);
-function animate() {
-    //tile.rotation += 0.01;
-    /*console.time('hello');
-    nextTile = ti.next();
-    nextTile2 = ti.next();
-    nextTile3 = ti.next();
-    nextTile4 = ti.next();
-    nextTile5 = ti.next();
-    if(typeof nextTile != 'undefined'){
-            nextTile.Sprite.rotation += 0.01;
-            nextTile2.Sprite.rotation += 0.01;
-            nextTile3.Sprite.rotation += 0.01;
-            nextTile4.Sprite.rotation += 0.01;
 
-            nextTile5.Sprite.rotation += 0.01;
+art.init(quality, function(){
+    WC = new WorldContainer(stage, chunkSize);
+    WC.init();
 
-    }*/
-    //console.log(nextTile);
-    
-    WC.position.x += DeltaMove.x;
-    WC.position.y += DeltaMove.y;
-    renderer.render(stage);
-    frameCount++;
     requestAnimationFrame(animate);
-    //console.timeEnd('hello');
-}
+
+
+    setInterval(function(){
+        console.info(frameCount);
+        frameCount = 0;
+    }, 1000);
+
+    function animate() {
+        //console.time('hello');
+
+        WC.position.x += DeltaMove.x;
+        WC.position.y += DeltaMove.y;
+        renderer.render(stage);
+        requestAnimationFrame(animate);
+        ++frameCount;
+
+        //console.timeEnd('hello');
+    }
+});
