@@ -12,7 +12,7 @@ if(!confirm("Use Normal Quality Textures?")){
 document.body.appendChild(renderer.view);
 
 var stage = new PIXI.Stage(0xFFFFFF, true),
-    chunkSize = new PIXI.Point(7, 7),
+    chunkSize = new PIXI.Point(5, 5),
     //chunkAmount = new PIXI.Point(
     WC;// = new WorldContainer(stage, chunkSize);
 
@@ -60,7 +60,8 @@ $(document).keyup(function(e) {
 art.init(quality, function(){
     WC = new WorldContainer(stage, chunkSize);
     WC.init();
-
+    
+    
     requestAnimationFrame(animate);
 
 

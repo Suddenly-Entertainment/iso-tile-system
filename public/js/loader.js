@@ -14,32 +14,6 @@ var art = {
         
         getTiles: function(quality, cb){
             var self = this;
-            /*$.getJSON('/tileNames', function(data){
-                art.tiles.baseUrl = data.basePath;
-                art.tiles.fileNames = data.files;
-
-                async.map(data.files,
-                    function(name, callback){
-                        var res = art.tiles.baseUrl.concat(name);
-                        callback(null, res);
-                    },
-                    function(err, results){
-                        art.tiles.fileUrls = results;
-                        art.tiles.names = art.GetBetterNames(results);
-                        
-                        art.loadAssets(results, function(){
-                            var length = results.length;
-                            
-                            for(var i = 0; i < length; ++i){
-                                var texture = new PIXI.Texture.fromImage(results[i], art.crossorigin);
-                                art.tiles.textures[self.names[i]] = texture;
-                            }
-                            art.tiles.loaded = true;
-                            cb();
-                        });
-                    }
-                );
-            });*/
             var url = '/spritesheets/terrainNorm.json';
             switch(quality){
                 case 2:
@@ -56,7 +30,8 @@ var art = {
                     self.scale.y = 2;
                     url = '/spritesheets/terrainLow.json';
                     break;
-            }            
+            }
+
             var thing = new PIXI.SpriteSheetLoader(url, true);
             thing.addEventListener('loaded', function(data){
                 console.log(data);
@@ -84,12 +59,13 @@ var art = {
                 }
                 self.loaded = true;
                 art.toppers.loaded = true;
+                
                 cb();
                 //console.log(new PIXI.Texture.fromFrame
             });
             thing.load();
         },
-        
+        //Just a utility function.
         getRandomTexture: function(){
             var self = this;
             var randVal = Math.floor(Math.random()*(self.names.length-1));

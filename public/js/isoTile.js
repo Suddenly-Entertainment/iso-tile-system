@@ -128,10 +128,16 @@ function Tile(point, z, stage, inChunk) {
     //this.childThing.position.y -= 32;
     
     //this.Sprite.addChild(this.childThing);
-    //self.Sprite.setInteractive(true);
-    //self.Sprite.mousedown = function(interData){
-    //  console.log(interData);  
-    //};
+    self.Sprite.setInteractive(true);
+    self.Sprite.mousedown = function(interData){
+        var actualPos = self.Sprite.parent.position.clone();
+        
+        actualPos.x += self.Sprite.position.x;
+        actualPos.y += self.Sprite.position.y;
+        console.log(actualPos);
+        WC.hl.visible = true;
+        WC.hl.position = actualPos;
+    };
     //stage.addChild(self.Sprite);
     
     //SortInOnStage(self.Sprite, stage);
@@ -166,8 +172,8 @@ function Chunk(position, size, stage){
     this.posA = new PIXI.Point(position.x, position.y);
     this.pos = position;
     this.position = TileToGraphicPoint(this.posA);
-    this.xRange = new PIXI.Point(-(size.x-1)/2, (size.x-1)/2);
-    this.yRange = new PIXI.Point(-(size.y-1)/2, (size.y-1)/2);
+    this.xRange = new PIXI.Point(-(size.x)/2, (size.x)/2);
+    this.yRange = new PIXI.Point(-(size.y)/2, (size.y)/2);
     this.setStageReference(stage);
     
     this.__defineGetter__('z', function(){
@@ -231,6 +237,9 @@ WorldContainer = function(stage, chunkSize)
     this.Tiles = [];
     this.Chunks = [];
     this.chunkSize = chunkSize;
+    this.hl = PIXI.Sprite.fromImage('/imgs/tileH.gif', true);
+    this.hl.visible = false;
+    this.addChild(this.hl);
     stage.addChild(this);
     this.setStageReference(stage);
     
@@ -254,8 +263,8 @@ WorldContainer.prototype.addTile = function(Tile){
 };
 
 WorldContainer.prototype.init = function(){
-    var xOffset = 1,
-        yOffset = 1;
+    var xOffset = 0,
+        yOffset = 0;
     for(var x = 0; x < (this.chunkSize.y - xOffset)*10; x+=this.chunkSize.x-xOffset){
         for(var hello = 0; hello < (this.chunkSize.y - yOffset)*10; hello+=this.chunkSize.y - yOffset){
             var pos = new PIXI.Point(x, hello);
@@ -361,6 +370,7 @@ WorldContainer.prototype.SetChildren = function(){
         },
         function(error){
             //self.children = res;
+            self.addChild(self.hl);
             console.timeEnd("SetChildren");
         });
     });
