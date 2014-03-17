@@ -1,84 +1,92 @@
-var renderer = new PIXI.WebGLRenderer(1280, 480);
-var quality = 1;
+/*global PIXI:false, SEI:true, WC:true, _:false, $:false, async:false,
+    console:false, confirm:false, document:false, requestAnimationFrame:false, setInterval:false
+*/
+var viewportSize = new PIXI.Point(1280, 480),
+    renderer = new PIXI.WebGLRenderer(viewportSize.x, viewportSize.y),
+    frameCounter = $("#frameRate"),
+    quality = 1,
+    stage = new PIXI.Stage(0xFFFFFF, true),
+    chunkSize = new PIXI.Point(4, 4),
+    WC,
+    DeltaMove = new PIXI.Point(0, 0),
+    frameCount = 0;
 
-if(!confirm("Use Normal Quality Textures?")){
-    if(confirm("Use High Quality Textures?  If no, then low quality.")){
+if (!confirm("Use Normal Quality Textures?")) {
+    if (confirm("Use High Quality Textures?  If no, then low quality.")) {
         quality = 2;
-    }else{
-        quality = 0;   
+    } else {
+        quality = 0;
     }
 }
 
 document.body.appendChild(renderer.view);
 
-var stage = new PIXI.Stage(0xFFFFFF, true),
-    chunkSize = new PIXI.Point(5, 5),
-    //chunkAmount = new PIXI.Point(
-    WC;// = new WorldContainer(stage, chunkSize);
-
-var DeltaMove = new PIXI.Point(0, 0);
-var frameCount = 0;
-$(document).keydown(function(e) {
+$(document).keydown(function (e) {
+    'use strict';
     e.preventDefault();
     var key = e.keyCode;
-    switch(key){
-        case 37: //Key left
-            DeltaMove.x = 10;
-            break;
-        case 38: //Key Up
-            DeltaMove.y = 10;
-            break;
-        case 39: //Key right
-            DeltaMove.x = -10;
-            break;
-        case 40: //Key down
-            DeltaMove.y = -10;
-            break;
+    
+    switch (key) {
+    case 65:
+    case 37: //Key left
+        DeltaMove.x = 10;
+        break;
+    case 87:
+    case 38: //Key Up
+        DeltaMove.y = 10;
+        break;
+    case 68:
+    case 39: //Key right
+        DeltaMove.x = -10;
+        break;
+    case 83:
+    case 40: //Key down
+        DeltaMove.y = -10;
+        break;
     }
     
 });
-$(document).keyup(function(e) {
+$(document).keyup(function (e) {
+    'use strict';
     e.preventDefault();
     var key = e.keyCode;
-    switch(key){
-        case 37: //Key left
-            DeltaMove.x = 0;
-            break;
-        case 38: //Key Up
-            DeltaMove.y = 0;
-            break;
-        case 39: //Key right
-            DeltaMove.x = 0;
-            break;
-        case 40: //Key down
-            DeltaMove.y = 0;
-            break;
-    }
     
+    switch (key) {
+    case 65:
+    case 37: //Key left
+        DeltaMove.x = 0;
+        break;
+    case 87:
+    case 38: //Key Up
+        DeltaMove.y = 0;
+        break;
+    case 68:
+    case 39: //Key right
+        DeltaMove.x = 0;
+        break;
+    case 83:
+    case 40: //Key down
+        DeltaMove.y = 0;
+        break;
+    }
 });
 
-art.init(quality, function(){
-    WC = new WorldContainer(stage, chunkSize);
+SEI.Art.init(quality, function () {
+    'use strict';
+    WC = new SEI.WorldContainer(stage, chunkSize);
     WC.init();
-    
-    
-    requestAnimationFrame(animate);
-
-
-    setInterval(function(){
-        console.info(frameCount);
-        frameCount = 0;
-    }, 1000);
 
     function animate() {
-        //console.time('hello');
-
         WC.position.x += DeltaMove.x;
         WC.position.y += DeltaMove.y;
         renderer.render(stage);
         requestAnimationFrame(animate);
         ++frameCount;
-
-        //console.timeEnd('hello');
     }
+    requestAnimationFrame(animate);
+    
+    setInterval(function () {
+        frameCounter.text(frameCount);
+        frameCount = 0;
+    }, 1000);
 });
