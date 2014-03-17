@@ -10,7 +10,24 @@ var fs = require('fs'),
     jquery = fs.readFileSync(__dirname.concat('/main/jquery.js'), defFROpts),
     asyncjs = fs.readFileSync(__dirname.concat('/main/async.js'), defFROpts),
     underscorejs = fs.readFileSync(__dirname.concat('/main/underscore.js'), defFROpts),
-    alljs = "".concat(asyncjs, underscorejs, pixidevjs, jquery);
+    alljs = "".concat(asyncjs, underscorejs, pixidevjs, jquery),
+    
+    imgBasePath = __dirname.concat('/public/imgs'),
+    tilePath = imgBasePath.concat('/tiles'),
+    topperPath = imgBasePath.concat('/tileToppers'),
+    toppers = fs.readdirSync(topperPath),
+    tiles = fs.readdirSync(tilePath);
+
+var tIndex = tiles.indexOf('.DS_Store'),
+    tpIndex = toppers.indexOf('.DS_Store');
+
+    if( tIndex !== -1){
+        tiles.splice(tIndex, 1);
+    }
+if(tpIndex !== -1){
+    toppers.splice(tpIndex, 1);
+}
+
 
 global.APP_DIR = __dirname;
 
@@ -74,5 +91,17 @@ http.createServer(app).listen(app.get('port'), function(){
         res.json(obj);
         
     });
-
+    
+    app.get('/tileNames', function(req, res){
+        var obj = {};
+        obj.basePath = '/imgs/tiles/';
+        obj.files = tiles;
+        res.json(obj);
+    });
+    app.get('/topperNames', function(req, res){
+        var obj = {};
+        obj.basePath = '/imgs/tiletoppers/';
+        obj.files = toppers;
+        res.json(obj);
+    });
 })
